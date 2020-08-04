@@ -19,23 +19,81 @@ router.post("/", (req, res) => {
 
 router.post("/:id/comments", (req, res) => {
   const id = req.params.id;
-
   try {
     if (id) {
       if (req.body.text) {
         req.body.post_id = id;
-        Posts.findCommentById(comment.id).then((newComment) => {
-          res.status(201).json({ data: newComment });
+        Posts.insertComment(req.body)
+          .then((comment) => {
+            Posts.findCommentById(comment.id).then((newComment) => {
+              res.status(201).json(newComment);
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        res.status(400).json({
+          errorMessage: "Please provide text for the comment.",
         });
       }
     } else {
       res.status(404).json({
-        error: "The post with the specified ID does not exist",
+        error: "The post with the specified ID does not exist.",
       });
     }
-  } catch {
+  } catch (error) {
     res.status(500).json({
-      error: "There was an error while saving the post to the database",
+      error: "There was an error while saving the comment to the database",
+    });
+  }
+});
+
+router.get("/", (req, res) => {
+  Posts.find()
+    .then((posts) => {
+      res.status(200).json(posts);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
+router.get("/:id", (req, res) => {
+  const id = req.params.id;
+  try {
+    Posts.findById(id)
+      .then((post) => {
+        res.status(200).json(post);
+      })
+      .catch((error) => {
+        res
+          .status(404)
+          .json({ error: "The post with the specified ID does not exist." });
+      });
+  } catch {
+    res
+      .status(500)
+      .json({ error: "The comments information could not be retrieved." });
+  }
+});
+
+router.get("/:id/comments", (req, res) => {
+  const id = req.params.id;
+  try {
+    Posts.findPostComments(id)
+      .then((comments) => {
+        console.log(comments);
+        res.status(200).json(comments);
+      })
+      .catch((error) => {
+        res.status(404).json({
+          message: "The post with the specified ID does not exist.",
+        });
+      });
+  } catch (error) {
+    res.status(500).json({
+      error: "The comments information could not be retrieved.",
     });
   }
 });
