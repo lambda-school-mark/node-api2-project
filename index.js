@@ -4,11 +4,13 @@ const server = express();
 
 const postRouter = require("./routers/posts/posts-router");
 
-server.use("/api/posts", postRouter);
+server.use(express.json());
 
 server.get("/", (req, res) => {
   res.send({ message: "Velcome my friends." });
 });
+
+server.use("/api/posts", postRouter);
 
 const port = 8000;
 server.listen(port, () => {
